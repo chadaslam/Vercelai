@@ -1,0 +1,1454 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Vercel AI - Enterprise AI Solutions</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Archivo:wght@300;400;600;700&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        :root {
+            --primary: #0A0E27;
+            --secondary: #1A1F3A;
+            --accent: #00F0FF;
+            --accent-warm: #FF6B35;
+            --text: #E8E8E8;
+            --text-dim: #8B92A8;
+            --surface: #151935;
+            --gradient-1: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            --gradient-2: linear-gradient(135deg, #00F0FF 0%, #0066FF 100%);
+            --gradient-glow: radial-gradient(circle at 50% 50%, rgba(0, 240, 255, 0.15) 0%, transparent 70%);
+        }
+
+        body {
+            font-family: 'Archivo', sans-serif;
+            background: var(--primary);
+            color: var(--text);
+            line-height: 1.6;
+            overflow-x: hidden;
+        }
+
+        .noise-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            opacity: 0.03;
+            background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' /%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)' /%3E%3C/svg%3E");
+            z-index: 9999;
+        }
+
+        .page {
+            display: none;
+            animation: fadeIn 0.5s ease-out;
+        }
+
+        .page.active {
+            display: block;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        /* Navigation */
+        nav {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            padding: 2rem 5%;
+            z-index: 1000;
+            background: rgba(10, 14, 39, 0.8);
+            backdrop-filter: blur(20px);
+            border-bottom: 1px solid rgba(0, 240, 255, 0.1);
+        }
+
+        .nav-container {
+            max-width: 1400px;
+            margin: 0 auto;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .logo {
+            font-family: 'Space Mono', monospace;
+            font-size: 1.5rem;
+            font-weight: 700;
+            background: var(--gradient-2);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            letter-spacing: -0.5px;
+        }
+
+        .nav-links {
+            display: flex;
+            gap: 3rem;
+            list-style: none;
+        }
+
+        .nav-links a {
+            color: var(--text-dim);
+            text-decoration: none;
+            font-weight: 500;
+            transition: all 0.3s;
+            position: relative;
+            cursor: pointer;
+        }
+
+        .nav-links a::after {
+            content: '';
+            position: absolute;
+            bottom: -5px;
+            left: 0;
+            width: 0;
+            height: 2px;
+            background: var(--accent);
+            transition: width 0.3s;
+        }
+
+        .nav-links a:hover::after,
+        .nav-links a.active::after {
+            width: 100%;
+        }
+
+        .nav-links a:hover,
+        .nav-links a.active {
+            color: var(--accent);
+        }
+
+        /* Hero Section */
+        .hero {
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            position: relative;
+            overflow: hidden;
+            padding: 0 5%;
+        }
+
+        .hero::before {
+            content: '';
+            position: absolute;
+            top: 20%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            width: 800px;
+            height: 800px;
+            background: var(--gradient-glow);
+            animation: pulse 8s ease-in-out infinite;
+        }
+
+        @keyframes pulse {
+            0%, 100% { transform: translate(-50%, -50%) scale(1); opacity: 0.5; }
+            50% { transform: translate(-50%, -50%) scale(1.2); opacity: 0.8; }
+        }
+
+        .hero-content {
+            max-width: 1200px;
+            text-align: center;
+            position: relative;
+            z-index: 1;
+        }
+
+        .hero h1 {
+            font-size: clamp(3rem, 8vw, 6rem);
+            font-weight: 700;
+            line-height: 1.1;
+            margin-bottom: 2rem;
+            animation: slideUp 1s ease-out;
+        }
+
+        @keyframes slideUp {
+            from { opacity: 0; transform: translateY(30px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .gradient-text {
+            background: var(--gradient-2);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .hero p {
+            font-size: 1.3rem;
+            color: var(--text-dim);
+            max-width: 700px;
+            margin: 0 auto 3rem;
+            animation: slideUp 1s ease-out 0.2s both;
+        }
+
+        .cta-buttons {
+            display: flex;
+            gap: 1.5rem;
+            justify-content: center;
+            animation: slideUp 1s ease-out 0.4s both;
+        }
+
+        .btn {
+            padding: 1rem 2.5rem;
+            border: none;
+            border-radius: 8px;
+            font-size: 1.1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+            text-decoration: none;
+            display: inline-block;
+        }
+
+        .btn-primary {
+            background: var(--gradient-2);
+            color: white;
+            box-shadow: 0 8px 24px rgba(0, 102, 255, 0.3);
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 12px 32px rgba(0, 102, 255, 0.4);
+        }
+
+        .btn-secondary {
+            background: transparent;
+            color: var(--accent);
+            border: 2px solid var(--accent);
+        }
+
+        .btn-secondary:hover {
+            background: var(--accent);
+            color: var(--primary);
+        }
+
+        /* Stats Section */
+        .stats {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 2rem;
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 4rem 5%;
+        }
+
+        .stat-card {
+            background: var(--surface);
+            padding: 2.5rem;
+            border-radius: 16px;
+            border: 1px solid rgba(0, 240, 255, 0.1);
+            text-align: center;
+            transition: all 0.3s;
+        }
+
+        .stat-card:hover {
+            transform: translateY(-5px);
+            border-color: var(--accent);
+            box-shadow: 0 8px 32px rgba(0, 240, 255, 0.2);
+        }
+
+        .stat-number {
+            font-size: 3rem;
+            font-weight: 700;
+            background: var(--gradient-2);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            font-family: 'Space Mono', monospace;
+        }
+
+        .stat-label {
+            color: var(--text-dim);
+            margin-top: 0.5rem;
+        }
+
+        /* Services Section */
+        .services-section {
+            padding: 6rem 5%;
+            max-width: 1400px;
+            margin: 0 auto;
+        }
+
+        .section-header {
+            text-align: center;
+            margin-bottom: 4rem;
+        }
+
+        .section-header h2 {
+            font-size: clamp(2.5rem, 5vw, 4rem);
+            margin-bottom: 1rem;
+        }
+
+        .section-header p {
+            font-size: 1.2rem;
+            color: var(--text-dim);
+            max-width: 600px;
+            margin: 0 auto;
+        }
+
+        .services-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
+            gap: 2rem;
+        }
+
+        .service-card {
+            background: var(--surface);
+            border-radius: 20px;
+            padding: 3rem;
+            border: 1px solid rgba(0, 240, 255, 0.1);
+            transition: all 0.4s;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .service-card::before {
+            content: '';
+            position: absolute;
+            top: -50%;
+            left: -50%;
+            width: 200%;
+            height: 200%;
+            background: radial-gradient(circle, rgba(0, 240, 255, 0.1) 0%, transparent 70%);
+            opacity: 0;
+            transition: opacity 0.4s;
+        }
+
+        .service-card:hover::before {
+            opacity: 1;
+        }
+
+        .service-card:hover {
+            transform: translateY(-8px);
+            border-color: var(--accent);
+            box-shadow: 0 16px 48px rgba(0, 240, 255, 0.2);
+        }
+
+        .service-icon {
+            font-size: 3rem;
+            margin-bottom: 1.5rem;
+            display: block;
+        }
+
+        .service-card h3 {
+            font-size: 1.8rem;
+            margin-bottom: 1rem;
+            color: var(--text);
+        }
+
+        .service-card p {
+            color: var(--text-dim);
+            margin-bottom: 1.5rem;
+            line-height: 1.8;
+        }
+
+        .service-features {
+            list-style: none;
+            margin-top: 1.5rem;
+        }
+
+        .service-features li {
+            padding: 0.5rem 0;
+            color: var(--text-dim);
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .service-features li::before {
+            content: '→';
+            color: var(--accent);
+            font-weight: bold;
+        }
+
+        /* Booking Section */
+        .booking-section {
+            padding: 6rem 5%;
+            max-width: 800px;
+            margin: 0 auto;
+        }
+
+        .booking-form {
+            background: var(--surface);
+            border-radius: 20px;
+            padding: 3rem;
+            border: 1px solid rgba(0, 240, 255, 0.1);
+        }
+
+        .form-group {
+            margin-bottom: 2rem;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 0.5rem;
+            color: var(--text);
+            font-weight: 600;
+        }
+
+        .form-group input,
+        .form-group textarea,
+        .form-group select {
+            width: 100%;
+            padding: 1rem;
+            background: var(--secondary);
+            border: 1px solid rgba(0, 240, 255, 0.2);
+            border-radius: 8px;
+            color: var(--text);
+            font-family: 'Archivo', sans-serif;
+            font-size: 1rem;
+            transition: all 0.3s;
+        }
+
+        .form-group input:focus,
+        .form-group textarea:focus,
+        .form-group select:focus {
+            outline: none;
+            border-color: var(--accent);
+            box-shadow: 0 0 0 3px rgba(0, 240, 255, 0.1);
+        }
+
+        .form-group textarea {
+            min-height: 120px;
+            resize: vertical;
+        }
+
+        .form-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 2rem;
+        }
+
+        /* Footer */
+        footer {
+            background: var(--secondary);
+            padding: 4rem 5% 2rem;
+            margin-top: 6rem;
+            border-top: 1px solid rgba(0, 240, 255, 0.1);
+        }
+
+        .footer-content {
+            max-width: 1400px;
+            margin: 0 auto;
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 3rem;
+            margin-bottom: 3rem;
+        }
+
+        .footer-section h4 {
+            margin-bottom: 1rem;
+            color: var(--accent);
+        }
+
+        .footer-section p,
+        .footer-section a {
+            color: var(--text-dim);
+            text-decoration: none;
+            display: block;
+            margin-bottom: 0.5rem;
+            transition: color 0.3s;
+        }
+
+        .footer-section a:hover {
+            color: var(--accent);
+        }
+
+        .footer-bottom {
+            text-align: center;
+            padding-top: 2rem;
+            border-top: 1px solid rgba(0, 240, 255, 0.1);
+            color: var(--text-dim);
+        }
+
+        /* Mobile Responsive */
+        @media (max-width: 768px) {
+            .nav-links {
+                gap: 1.5rem;
+            }
+
+            .hero h1 {
+                font-size: 2.5rem;
+            }
+
+            .cta-buttons {
+                flex-direction: column;
+            }
+
+            .form-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .services-grid {
+                grid-template-columns: 1fr;
+            }
+
+            #booking .booking-section > div {
+                grid-template-columns: 1fr !important;
+            }
+
+            .calendar-booking-container {
+                grid-template-columns: 1fr !important;
+            }
+
+            .booking-info-panel {
+                padding: 2rem !important;
+            }
+        }
+
+        @media (max-width: 1024px) {
+            #booking .booking-section > div {
+                grid-template-columns: 1fr !important;
+            }
+
+            .calendar-booking-container {
+                grid-template-columns: 1fr !important;
+            }
+        }
+
+        /* Calendar Booking Styles */
+        .calendar-booking-container {
+            display: grid;
+            grid-template-columns: 1fr 1.2fr;
+            gap: 0;
+            background: var(--surface);
+            border-radius: 24px;
+            overflow: hidden;
+            border: 1px solid rgba(0, 240, 255, 0.1);
+            margin-top: 3rem;
+        }
+
+        .booking-info-panel {
+            background: linear-gradient(135deg, #00D9B5 0%, #00B894 100%);
+            padding: 4rem;
+            color: #0A0E27;
+        }
+
+        .booking-info-panel h2 {
+            color: #0A0E27;
+        }
+
+        .booking-card {
+            background: rgba(255, 255, 255, 0.95);
+            padding: 1.5rem;
+            border-radius: 16px;
+            margin-top: auto;
+        }
+
+        .avatar {
+            width: 50px;
+            height: 50px;
+            background: var(--primary);
+            color: var(--accent);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 700;
+            font-size: 1.2rem;
+        }
+
+        .calendar-panel {
+            padding: 3rem;
+            background: var(--surface);
+        }
+
+        .calendar-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 2rem;
+        }
+
+        .calendar-header h3 {
+            font-size: 1.5rem;
+            color: var(--text);
+        }
+
+        .calendar-nav {
+            display: flex;
+            gap: 0.5rem;
+        }
+
+        .calendar-nav-btn {
+            width: 40px;
+            height: 40px;
+            border: 1px solid rgba(0, 240, 255, 0.2);
+            background: var(--secondary);
+            color: var(--text);
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 1.2rem;
+            transition: all 0.3s;
+        }
+
+        .calendar-nav-btn:hover {
+            background: var(--accent);
+            color: var(--primary);
+            border-color: var(--accent);
+        }
+
+        .availability-notice {
+            background: rgba(0, 240, 255, 0.1);
+            border: 1px solid rgba(0, 240, 255, 0.2);
+            border-radius: 12px;
+            padding: 1rem;
+            display: flex;
+            gap: 1rem;
+            margin-bottom: 2rem;
+        }
+
+        .info-icon {
+            color: var(--accent);
+            font-weight: bold;
+            font-size: 1.2rem;
+        }
+
+        .availability-notice strong {
+            color: var(--text);
+            display: block;
+            margin-bottom: 0.25rem;
+        }
+
+        .availability-notice p {
+            color: var(--text-dim);
+            font-size: 0.9rem;
+            margin: 0;
+        }
+
+        .calendar-weekdays {
+            display: grid;
+            grid-template-columns: repeat(7, 1fr);
+            gap: 0.5rem;
+            margin-bottom: 0.5rem;
+            text-align: center;
+            color: var(--text-dim);
+            font-weight: 600;
+            font-size: 0.9rem;
+        }
+
+        .calendar-days {
+            display: grid;
+            grid-template-columns: repeat(7, 1fr);
+            gap: 0.5rem;
+            margin-bottom: 2rem;
+        }
+
+        .calendar-day {
+            aspect-ratio: 1;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.3s;
+            color: var(--text);
+            font-weight: 500;
+            border: 1px solid transparent;
+        }
+
+        .calendar-day:hover:not(.disabled):not(.empty) {
+            background: rgba(0, 240, 255, 0.1);
+            border-color: var(--accent);
+        }
+
+        .calendar-day.selected {
+            background: var(--accent);
+            color: var(--primary);
+            font-weight: 700;
+        }
+
+        .calendar-day.disabled {
+            color: var(--text-dim);
+            opacity: 0.3;
+            cursor: not-allowed;
+        }
+
+        .calendar-day.empty {
+            cursor: default;
+        }
+
+        .duration-section,
+        .time-section {
+            margin-bottom: 2rem;
+        }
+
+        .duration-section h4,
+        .time-section h4 {
+            color: var(--text-dim);
+            font-size: 0.85rem;
+            font-weight: 700;
+            letter-spacing: 1px;
+            margin-bottom: 1rem;
+        }
+
+        .duration-options {
+            display: flex;
+            gap: 0.75rem;
+        }
+
+        .duration-btn {
+            flex: 1;
+            padding: 0.75rem;
+            background: var(--secondary);
+            border: 1px solid rgba(0, 240, 255, 0.2);
+            border-radius: 8px;
+            color: var(--text);
+            cursor: pointer;
+            transition: all 0.3s;
+            font-weight: 600;
+        }
+
+        .duration-btn:hover {
+            background: rgba(0, 240, 255, 0.1);
+            border-color: var(--accent);
+        }
+
+        .duration-btn.active {
+            background: var(--accent);
+            color: var(--primary);
+            border-color: var(--accent);
+        }
+
+        .time-select {
+            position: relative;
+        }
+
+        .time-select select {
+            width: 100%;
+            padding: 1rem;
+            padding-left: 3rem;
+            background: var(--secondary);
+            border: 1px solid rgba(0, 240, 255, 0.2);
+            border-radius: 8px;
+            color: var(--text);
+            font-size: 1rem;
+            cursor: pointer;
+            appearance: none;
+            transition: all 0.3s;
+        }
+
+        .time-select select:focus {
+            outline: none;
+            border-color: var(--accent);
+            box-shadow: 0 0 0 3px rgba(0, 240, 255, 0.1);
+        }
+
+        .time-select span {
+            position: absolute;
+            left: 1rem;
+            top: 50%;
+            transform: translateY(-50%);
+            pointer-events: none;
+        }
+
+        .continue-btn {
+            width: 100%;
+            padding: 1.2rem;
+            background: #0A0E27;
+            color: white;
+            border: none;
+            border-radius: 12px;
+            font-size: 1.1rem;
+            font-weight: 700;
+            cursor: pointer;
+            transition: all 0.3s;
+            margin-top: 1rem;
+        }
+
+        .continue-btn:hover {
+            background: #1A1F3A;
+            transform: translateY(-2px);
+            box-shadow: 0 8px 24px rgba(0, 0, 0, 0.3);
+        }
+
+        .continue-btn:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+
+        /* Booking Modal */
+        .booking-modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0, 0, 0, 0.8);
+            z-index: 10000;
+            align-items: center;
+            justify-content: center;
+            padding: 2rem;
+        }
+
+        .booking-modal.show {
+            display: flex;
+        }
+
+        .booking-modal-content {
+            background: var(--surface);
+            border-radius: 24px;
+            padding: 3rem;
+            max-width: 600px;
+            width: 100%;
+            max-height: 90vh;
+            overflow-y: auto;
+            position: relative;
+            border: 1px solid rgba(0, 240, 255, 0.1);
+        }
+
+        .modal-close {
+            position: absolute;
+            top: 1.5rem;
+            right: 1.5rem;
+            width: 40px;
+            height: 40px;
+            background: var(--secondary);
+            border: 1px solid rgba(0, 240, 255, 0.2);
+            border-radius: 50%;
+            color: var(--text);
+            font-size: 1.5rem;
+            cursor: pointer;
+            transition: all 0.3s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .modal-close:hover {
+            background: var(--accent);
+            color: var(--primary);
+            border-color: var(--accent);
+        }
+
+        /* Success Message */
+        .success-message {
+            background: rgba(0, 240, 100, 0.1);
+            border: 1px solid rgba(0, 240, 100, 0.3);
+            padding: 1rem;
+            border-radius: 8px;
+            margin-top: 1rem;
+            display: none;
+        }
+
+        .success-message.show {
+            display: block;
+            animation: slideUp 0.5s ease-out;
+        }
+    </style>
+</head>
+<body>
+    <div class="noise-overlay"></div>
+
+    <!-- Navigation -->
+    <nav>
+        <div class="nav-container">
+            <div class="logo">VERCEL AI</div>
+            <ul class="nav-links">
+                <li><a href="#" class="nav-link active" data-page="home">Home</a></li>
+                <li><a href="#" class="nav-link" data-page="services">Services</a></li>
+                <li><a href="#" class="nav-link" data-page="booking">Book a Call</a></li>
+            </ul>
+        </div>
+    </nav>
+
+    <!-- HOME PAGE -->
+    <div id="home" class="page active">
+        <section class="hero">
+            <div class="hero-content">
+                <h1>
+                    Enterprise AI Solutions<br>
+                    <span class="gradient-text">Built for Scale</span>
+                </h1>
+                <p>
+                    From intelligent voice agents to production-grade RAG systems, we deliver end-to-end AI solutions that transform your business operations and accelerate growth.
+                </p>
+                <div class="cta-buttons">
+                    <a href="#" class="btn btn-primary nav-link" data-page="booking">Get Started</a>
+                    <a href="#" class="btn btn-secondary nav-link" data-page="services">Explore Services</a>
+                </div>
+            </div>
+        </section>
+
+        <section class="stats">
+            <div class="stat-card">
+                <div class="stat-number">50+</div>
+                <div class="stat-label">AI Projects Delivered</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-number">95%</div>
+                <div class="stat-label">Client Satisfaction</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-number">24/7</div>
+                <div class="stat-label">Production Support</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-number">10x</div>
+                <div class="stat-label">Efficiency Gains</div>
+            </div>
+        </section>
+
+        <section class="services-section">
+            <div class="section-header">
+                <h2>Why Choose Vercel AI?</h2>
+                <p>Full-spectrum AI engineering expertise from concept to production deployment</p>
+            </div>
+            <div class="services-grid">
+                <div class="service-card">
+                    <span class="service-icon">🚀</span>
+                    <h3>Production-Ready</h3>
+                    <p>Deploy scalable AI systems with confidence. Every solution is built for enterprise reliability and performance.</p>
+                </div>
+                <div class="service-card">
+                    <span class="service-icon">🎯</span>
+                    <h3>End-to-End Delivery</h3>
+                    <p>From strategy to deployment and beyond. We handle the complete AI lifecycle for your business.</p>
+                </div>
+                <div class="service-card">
+                    <span class="service-icon">⚡</span>
+                    <h3>Rapid Innovation</h3>
+                    <p>Get to market faster with proven frameworks, optimized workflows, and battle-tested architectures.</p>
+                </div>
+            </div>
+        </section>
+    </div>
+
+    <!-- SERVICES PAGE -->
+    <div id="services" class="page">
+        <section class="services-section" style="padding-top: 150px;">
+            <div class="section-header">
+                <h2>AI Services That Drive<br><span class="gradient-text">Real Results</span></h2>
+                <p>Comprehensive AI solutions tailored to your business needs</p>
+            </div>
+
+            <div class="services-grid">
+                <div class="service-card">
+                    <span class="service-icon">🤖</span>
+                    <h3>Intelligent Voice AI Agents</h3>
+                    <p>Build enterprise-grade voice agents that handle customer interactions with human-like conversations and context awareness.</p>
+                    <ul class="service-features">
+                        <li>24/7 automated customer support</li>
+                        <li>Multi-language voice recognition</li>
+                        <li>Telephony integration (Twilio, Vonage)</li>
+                        <li>PMS and CRM integration</li>
+                        <li>Real-time conversation analytics</li>
+                    </ul>
+                </div>
+
+                <div class="service-card">
+                    <span class="service-icon">🧠</span>
+                    <h3>RAG Systems & LLM Applications</h3>
+                    <p>Deploy sophisticated retrieval-augmented generation systems that deliver accurate, context-aware responses from your data.</p>
+                    <ul class="service-features">
+                        <li>Custom knowledge base development</li>
+                        <li>Vector database optimization</li>
+                        <li>Multi-modal RAG architectures</li>
+                        <li>Fine-tuned LLM deployment</li>
+                        <li>Prompt engineering & optimization</li>
+                    </ul>
+                </div>
+
+                <div class="service-card">
+                    <span class="service-icon">⚙️</span>
+                    <h3>Agentic AI Workflows</h3>
+                    <p>Create autonomous AI agents using LangGraph and LangChain that handle complex multi-step tasks intelligently.</p>
+                    <ul class="service-features">
+                        <li>Task automation & orchestration</li>
+                        <li>Tool-calling & API integration</li>
+                        <li>Decision-making workflows</li>
+                        <li>State management systems</li>
+                        <li>Multi-agent collaboration</li>
+                    </ul>
+                </div>
+
+                <div class="service-card">
+                    <span class="service-icon">👁️</span>
+                    <h3>Computer Vision Solutions</h3>
+                    <p>Implement cutting-edge CV systems for facial recognition, object detection, and real-time video analysis.</p>
+                    <ul class="service-features">
+                        <li>Facial recognition & verification</li>
+                        <li>Object detection & tracking</li>
+                        <li>Real-time video analytics</li>
+                        <li>Custom model training (YOLO, DeepFace)</li>
+                        <li>Edge deployment optimization</li>
+                    </ul>
+                </div>
+
+                <div class="service-card">
+                    <span class="service-icon">📊</span>
+                    <h3>ML Engineering & MLOps</h3>
+                    <p>Build robust ML pipelines with automated training, versioning, and deployment for production systems.</p>
+                    <ul class="service-features">
+                        <li>Model training & optimization</li>
+                        <li>Experiment tracking (MLflow, W&B)</li>
+                        <li>CI/CD for ML models</li>
+                        <li>Model monitoring & retraining</li>
+                        <li>Performance optimization</li>
+                    </ul>
+                </div>
+
+                <div class="service-card">
+                    <span class="service-icon">🔧</span>
+                    <h3>Custom AI Development</h3>
+                    <p>End-to-end AI solution development from strategy to deployment, tailored to your unique business requirements.</p>
+                    <ul class="service-features">
+                        <li>AI strategy & consulting</li>
+                        <li>Proof of concept development</li>
+                        <li>MVP to production scaling</li>
+                        <li>Cloud deployment (GCP, AWS)</li>
+                        <li>Ongoing support & optimization</li>
+                    </ul>
+                </div>
+            </div>
+
+            <div style="text-align: center; margin-top: 4rem;">
+                <a href="#" class="btn btn-primary nav-link" data-page="booking">Schedule a Consultation</a>
+            </div>
+        </section>
+    </div>
+
+    <!-- BOOKING PAGE -->
+    <div id="booking" class="page">
+        <section class="booking-section" style="padding-top: 150px; max-width: 1200px;">
+            <div class="section-header">
+                <h2>Let's Build Something<br><span class="gradient-text">Amazing Together</span></h2>
+                <p>Schedule a free consultation to discuss your AI needs</p>
+            </div>
+
+            <div class="calendar-booking-container">
+                <!-- Left Panel -->
+                <div class="booking-info-panel">
+                    <h2 style="font-size: 2.5rem; margin-bottom: 1rem;">Schedule a Meeting</h2>
+                    <p style="color: var(--text-dim); margin-bottom: 3rem;">
+                        Choose a time slot that works for you. We'll send a confirmation email shortly.
+                    </p>
+
+                    <div class="booking-card">
+                        <div style="display: flex; align-items: center; gap: 1rem; margin-bottom: 1rem;">
+                            <div class="avatar">US</div>
+                            <div>
+                                <h4 style="margin-bottom: 0.25rem;">Umer Siddiqui</h4>
+                                <p style="color: var(--text-dim); font-size: 0.9rem;">um3rsiddiqui99@gmail.com</p>
+                            </div>
+                        </div>
+                        <div style="display: flex; align-items: center; gap: 0.5rem; color: var(--text-dim); font-size: 0.95rem;">
+                            <span>📹</span>
+                            <span>Google Meet • <span id="selectedDuration">30</span> min</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Right Panel - Calendar -->
+                <div class="calendar-panel">
+                    <!-- Calendar Header -->
+                    <div class="calendar-header">
+                        <h3 id="currentMonth">February 2026</h3>
+                        <div class="calendar-nav">
+                            <button class="calendar-nav-btn" id="prevMonth">‹</button>
+                            <button class="calendar-nav-btn" id="nextMonth">›</button>
+                        </div>
+                    </div>
+
+                    <!-- Live Availability Notice -->
+                    <div class="availability-notice">
+                        <span class="info-icon">ⓘ</span>
+                        <div>
+                            <strong>Live Availability</strong>
+                            <p>We're only showing the slots that are not occupied by other potential clients.</p>
+                        </div>
+                    </div>
+
+                    <!-- Calendar Grid -->
+                    <div class="calendar-weekdays">
+                        <div>S</div>
+                        <div>M</div>
+                        <div>T</div>
+                        <div>W</div>
+                        <div>T</div>
+                        <div>F</div>
+                        <div>S</div>
+                    </div>
+                    <div class="calendar-days" id="calendarDays"></div>
+
+                    <!-- Duration Selection -->
+                    <div class="duration-section">
+                        <h4>DURATION</h4>
+                        <div class="duration-options">
+                            <button class="duration-btn" data-duration="15">15m</button>
+                            <button class="duration-btn active" data-duration="30">30m</button>
+                            <button class="duration-btn" data-duration="45">45m</button>
+                            <button class="duration-btn" data-duration="60">1h</button>
+                        </div>
+                    </div>
+
+                    <!-- Time Selection -->
+                    <div class="time-section">
+                        <h4>TIME</h4>
+                        <div class="time-select">
+                            <span style="color: var(--text-dim);">🕐</span>
+                            <select id="timeSelect">
+                                <option value="">Select a time</option>
+                                <option value="09:00">9:00 AM</option>
+                                <option value="09:30">9:30 AM</option>
+                                <option value="10:00">10:00 AM</option>
+                                <option value="10:30">10:30 AM</option>
+                                <option value="11:00">11:00 AM</option>
+                                <option value="11:30">11:30 AM</option>
+                                <option value="12:00">12:00 PM</option>
+                                <option value="12:30">12:30 PM</option>
+                                <option value="13:00">1:00 PM</option>
+                                <option value="13:30">1:30 PM</option>
+                                <option value="14:00">2:00 PM</option>
+                                <option value="14:30">2:30 PM</option>
+                                <option value="15:00">3:00 PM</option>
+                                <option value="15:30">3:30 PM</option>
+                                <option value="16:00">4:00 PM</option>
+                                <option value="16:30">4:30 PM</option>
+                                <option value="17:00">5:00 PM</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <!-- Continue Button -->
+                    <button class="continue-btn" id="continueBtn">
+                        Continue →
+                    </button>
+                </div>
+            </div>
+
+            <!-- Booking Form Modal (appears after Continue) -->
+            <div class="booking-modal" id="bookingModal">
+                <div class="booking-modal-content">
+                    <button class="modal-close" id="closeModal">×</button>
+                    <h3 style="margin-bottom: 2rem;">Complete Your Booking</h3>
+                    
+                    <form id="contactForm">
+                        <div class="form-grid">
+                            <div class="form-group">
+                                <label for="firstName">First Name *</label>
+                                <input type="text" id="firstName" name="firstName" required>
+                            </div>
+                            <div class="form-group">
+                                <label for="lastName">Last Name *</label>
+                                <input type="text" id="lastName" name="lastName" required>
+                            </div>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="email">Email Address *</label>
+                            <input type="email" id="email" name="email" required>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="phone">Phone Number</label>
+                            <input type="tel" id="phone" name="phone" placeholder="+92-XXX-XXXXXXX">
+                        </div>
+
+                        <div class="form-group">
+                            <label for="company">Company Name</label>
+                            <input type="text" id="company" name="company">
+                        </div>
+
+                        <div class="form-group">
+                            <label for="service">Service Interest *</label>
+                            <select id="service" name="service" required>
+                                <option value="">Select a service...</option>
+                                <option value="voice-ai">Voice AI Agents</option>
+                                <option value="rag">RAG Systems & LLM Apps</option>
+                                <option value="agentic">Agentic AI Workflows</option>
+                                <option value="computer-vision">Computer Vision</option>
+                                <option value="mlops">ML Engineering & MLOps</option>
+                                <option value="custom">Custom AI Development</option>
+                                <option value="consulting">AI Consulting</option>
+                            </select>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="message">Project Details</label>
+                            <textarea id="message" name="message" placeholder="Tell us about your project..."></textarea>
+                        </div>
+
+                        <button type="submit" class="btn btn-primary" style="width: 100%; margin-top: 1rem;">
+                            Confirm Booking
+                        </button>
+
+                        <div class="success-message" id="successMessage">
+                            ✅ Thank you! Your consultation has been scheduled. Check your email for confirmation.
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </section>
+    </div>
+
+    <!-- Footer -->
+    <footer>
+        <div class="footer-content">
+            <div class="footer-section">
+                <h4>Vercel AI</h4>
+                <p>Enterprise AI solutions that scale with your business.</p>
+                <p style="margin-top: 1rem;">Karachi, Pakistan</p>
+            </div>
+            <div class="footer-section">
+                <h4>Services</h4>
+                <a href="#" class="nav-link" data-page="services">Voice AI Agents</a>
+                <a href="#" class="nav-link" data-page="services">RAG Systems</a>
+                <a href="#" class="nav-link" data-page="services">Agentic AI</a>
+                <a href="#" class="nav-link" data-page="services">Computer Vision</a>
+                <a href="#" class="nav-link" data-page="services">MLOps</a>
+            </div>
+            <div class="footer-section">
+                <h4>Contact</h4>
+                <p><a href="/cdn-cgi/l/email-protection" class="__cf_email__" data-cfemail="89fce4bafbfae0edede0f8fce0b0b0c9eee4e8e0e5a7eae6e4">[email&#160;protected]</a></p>
+                <p>+92-341-8094081</p>
+                <a href="https://linkedin.com/in/um3r-siddiqui" target="_blank">LinkedIn</a>
+                <a href="https://github.com/UmerSidiqui" target="_blank">GitHub</a>
+            </div>
+            <div class="footer-section">
+                <h4>Quick Links</h4>
+                <a href="#" class="nav-link" data-page="home">Home</a>
+                <a href="#" class="nav-link" data-page="services">Services</a>
+                <a href="#" class="nav-link" data-page="booking">Book a Call</a>
+                <a href="https://umersidiqui.github.io/Portfolio" target="_blank">Portfolio</a>
+            </div>
+        </div>
+        <div class="footer-bottom">
+            <p>&copy; 2026 Vercel AI. All rights reserved.</p>
+        </div>
+    </footer>
+
+    <script>
+        // Page Navigation
+        const pages = document.querySelectorAll('.page');
+        const navLinks = document.querySelectorAll('.nav-link');
+
+        function showPage(pageId) {
+            pages.forEach(page => page.classList.remove('active'));
+            navLinks.forEach(link => link.classList.remove('active'));
+            
+            document.getElementById(pageId).classList.add('active');
+            document.querySelectorAll(`[data-page="${pageId}"]`).forEach(link => {
+                link.classList.add('active');
+            });
+
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+        }
+
+        navLinks.forEach(link => {
+            link.addEventListener('click', (e) => {
+                e.preventDefault();
+                const pageId = link.getAttribute('data-page');
+                showPage(pageId);
+            });
+        });
+
+        // Calendar Functionality
+        let currentDate = new Date(2026, 1); // February 2026
+        let selectedDate = null;
+        let selectedTime = null;
+        let selectedDuration = 30;
+
+        const monthNames = ['January', 'February', 'March', 'April', 'May', 'June',
+            'July', 'August', 'September', 'October', 'November', 'December'];
+
+        function selectDate(day) {
+            selectedDate = new Date(currentDate.getFullYear(), currentDate.getMonth(), day);
+            renderCalendar();
+        }
+
+        function renderCalendar() {
+            const calendarDays = document.getElementById('calendarDays');
+            const currentMonth = document.getElementById('currentMonth');
+            
+            if (!calendarDays || !currentMonth) return;
+            
+            currentMonth.textContent = `${monthNames[currentDate.getMonth()]} ${currentDate.getFullYear()}`;
+            
+            const firstDay = new Date(currentDate.getFullYear(), currentDate.getMonth(), 1);
+            const lastDay = new Date(currentDate.getFullYear(), currentDate.getMonth() + 1, 0);
+            const prevLastDay = new Date(currentDate.getFullYear(), currentDate.getMonth(), 0);
+            
+            const firstDayIndex = firstDay.getDay();
+            const lastDayDate = lastDay.getDate();
+            const prevLastDayDate = prevLastDay.getDate();
+            
+            let days = '';
+            
+            // Previous month days
+            for (let x = firstDayIndex; x > 0; x--) {
+                days += `<div class="calendar-day empty disabled">${prevLastDayDate - x + 1}</div>`;
+            }
+            
+            // Current month days
+            const today = new Date();
+            for (let i = 1; i <= lastDayDate; i++) {
+                const dayDate = new Date(currentDate.getFullYear(), currentDate.getMonth(), i);
+                const isPast = dayDate < today.setHours(0, 0, 0, 0);
+                const isSelected = selectedDate && 
+                    selectedDate.getDate() === i && 
+                    selectedDate.getMonth() === currentDate.getMonth() &&
+                    selectedDate.getFullYear() === currentDate.getFullYear();
+                
+                const dayClass = isPast ? 'disabled' : (isSelected ? 'selected' : '');
+                days += `<div class="calendar-day ${dayClass}" data-date="${i}" onclick="selectDate(${i})">${i}</div>`;
+            }
+            
+            calendarDays.innerHTML = days;
+        }
+
+        // Initialize calendar when DOM is loaded
+        document.addEventListener('DOMContentLoaded', function() {
+            renderCalendar();
+
+            const prevMonthBtn = document.getElementById('prevMonth');
+            const nextMonthBtn = document.getElementById('nextMonth');
+            
+            if (prevMonthBtn) {
+                prevMonthBtn.addEventListener('click', () => {
+                    currentDate.setMonth(currentDate.getMonth() - 1);
+                    renderCalendar();
+                });
+            }
+
+            if (nextMonthBtn) {
+                nextMonthBtn.addEventListener('click', () => {
+                    currentDate.setMonth(currentDate.getMonth() + 1);
+                    renderCalendar();
+                });
+            }
+
+            // Duration selection
+            document.querySelectorAll('.duration-btn').forEach(btn => {
+                btn.addEventListener('click', function() {
+                    document.querySelectorAll('.duration-btn').forEach(b => b.classList.remove('active'));
+                    this.classList.add('active');
+                    selectedDuration = parseInt(this.getAttribute('data-duration'));
+                    const durationDisplay = document.getElementById('selectedDuration');
+                    if (durationDisplay) {
+                        durationDisplay.textContent = selectedDuration;
+                    }
+                });
+            });
+
+            // Time selection
+            const timeSelect = document.getElementById('timeSelect');
+            if (timeSelect) {
+                timeSelect.addEventListener('change', function() {
+                    selectedTime = this.value;
+                });
+            }
+
+            // Continue button
+            const continueBtn = document.getElementById('continueBtn');
+            if (continueBtn) {
+                continueBtn.addEventListener('click', () => {
+                    if (!selectedDate) {
+                        alert('Please select a date');
+                        return;
+                    }
+                    if (!selectedTime) {
+                        alert('Please select a time');
+                        return;
+                    }
+                    
+                    const modal = document.getElementById('bookingModal');
+                    if (modal) {
+                        modal.classList.add('show');
+                    }
+                });
+            }
+
+            // Close modal
+            const closeModal = document.getElementById('closeModal');
+            if (closeModal) {
+                closeModal.addEventListener('click', () => {
+                    const modal = document.getElementById('bookingModal');
+                    if (modal) {
+                        modal.classList.remove('show');
+                    }
+                });
+            }
+
+            // Close modal on background click
+            const bookingModal = document.getElementById('bookingModal');
+            if (bookingModal) {
+                bookingModal.addEventListener('click', (e) => {
+                    if (e.target.id === 'bookingModal') {
+                        bookingModal.classList.remove('show');
+                    }
+                });
+            }
+
+            // Form Submission
+            const contactForm = document.getElementById('contactForm');
+            const successMessage = document.getElementById('successMessage');
+
+            if (contactForm) {
+                contactForm.addEventListener('submit', (e) => {
+                    e.preventDefault();
+                    
+                    const formData = new FormData(contactForm);
+                    const bookingData = {
+                        date: selectedDate ? selectedDate.toLocaleDateString() : '',
+                        time: selectedTime || '',
+                        duration: selectedDuration,
+                        firstName: formData.get('firstName'),
+                        lastName: formData.get('lastName'),
+                        email: formData.get('email'),
+                        phone: formData.get('phone'),
+                        company: formData.get('company'),
+                        service: formData.get('service'),
+                        message: formData.get('message')
+                    };
+                    
+                    console.log('Booking Data:', bookingData);
+                    
+                    if (successMessage) {
+                        successMessage.classList.add('show');
+                    }
+                    contactForm.reset();
+                    
+                    setTimeout(() => {
+                        if (successMessage) {
+                            successMessage.classList.remove('show');
+                        }
+                        const modal = document.getElementById('bookingModal');
+                        if (modal) {
+                            modal.classList.remove('show');
+                        }
+                    }, 3000);
+                });
+            }
+        });
+
+        // Smooth scroll for internal links
+        document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+            anchor.addEventListener('click', function (e) {
+                const href = this.getAttribute('href');
+                if (href !== '#') {
+                    e.preventDefault();
+                    const target = document.querySelector(href);
+                    if (target) {
+                        target.scrollIntoView({
+                            behavior: 'smooth'
+                        });
+                    }
+                }
+            });
+        });
+    </script>
+</body>
+</html>
